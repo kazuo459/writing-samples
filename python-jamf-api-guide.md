@@ -448,6 +448,62 @@ def mdm_initiate_mobile_device_command(serial_number, command):
         print(f"\nCommand {command} initiated.")
 ```
 
+#### Initiate a Mobile Device Command - Disable Lost Mode
+
+> Receives **serial number**, obtains the **device id**, and initiates `DisableLostMode` command.
+
+```python
+def mdm_initiate_mobile_device_command_disable_lost_mode(serial_number):
+
+    # Retrieve device id
+    device_id = mdm_get_mobile_device_id_from_serial_number(serial_number)
+
+    # Get mobile device name
+    endpoint = f"{JAMF_API}/JSSResource/mobiledevices/id/{device_id}"
+    results = mdm_get_request_jamf_classic_json(endpoint)
+    device_name = results['mobile_device']['general']['display_name']
+
+    # Disable Lost Mode
+    command = 'DisableLostMode'
+    endpoint = f"{JAMF_API}/JSSResource/mobiledevicecommands/command/{command}/id/{device_id}
+    mdm_post_request_jamf_classic_xml(endpoint)
+```
+
+#### Initiate a Mobile Device Command - Enable Lost Mode
+
+> Receives **serial number**, obtains the **device id**, and initiates command. Then, checks to see if command has been initiated and prints outcome to screen.
+
+```python
+def mdm_initiate_mobile_device_command_enable_lost_mode(serial_number):
+    
+    # Retrieve device id
+    device_id = mdm_get_mobile_device_id_from_serial_number(serial_number)
+
+    # Get mobile device name
+    endpoint = f"{JAMF_API}/JSSResource/mobiledevices/id/{device_id}"
+    results = mdm_get_request_jamf_classic_json(endpoint)
+    device_name = results['mobile_device']['general']['display_name']
+
+    # Prompt for options
+    play_sound = input("\n(1) Yes\n(2) No\nDo you want to play a sound?: ")
+        if play_sound == '1':
+            lost_mode_with_sound = True
+        elif play_sound == '2':
+            lost_mode_with_sound = False
+
+    message = input("Please enter a message to display on device: ")
+
+    number = input("Please enter a phone number to display on device: ")
+
+    data = f"<mobile_device_command><general><command>{command}</command><lost_mode_message>{message)</lost_mode_message><lost_mode_phone>{number}</lost_mode_phone><always_enforce_lost_mode>true</always_enforce_lost_mode><lost_mode_with_sound>{lost_mode_with_sound}</lost_mode_with_sound></general><mobile_devices><mobile_device><id>{device_id}</id></mobile_device></mobile_devices></mobile_device_command>"
+
+    # Enable Lost Mode
+    command = 'EnableLostMode'
+    endpoint = f"{JAMF_API}/JSSResource/mobiledevicecommands/command/{command}/id/{device_id}"
+    data = 
+    mdm_post_request_jamf_classic_xml(endpoint)
+```
+
 #### Put Mobile Device into a Static Group
 
 > Receives **serial number**, **static group name**, and **static group id**. Submits a **put** request to add mobile device to static group and prints to screen.
@@ -486,6 +542,27 @@ def mdm_remove_mobile_device_from_static_group(group_id, group_name, serial_numb
     data = f"<mobile_device_group><mobile_device_deletions><mobile_device><serial_number>{serial_number}</serial_number></mobile_device></mobile_device_deletions></mobile_device_group>"
     mdm_put_request_classic_xml(endpoint, data)
     print(f"\nMobile Device '{device_name}' deleted from Static Group: {group_name}")
+```
+#### Shut Down a Mobile Device
+
+> Receives **serial number**, retrieves **device id** and inititates a `ShutDownDevice` **post** request.
+
+```python
+
+def mdm_shut_down_device(serial_number):
+    
+    # Retrieve device id
+    device_id = mdm_get_mobile_device_id_from_serial_number(serial_number)
+
+    # Get mobile device name
+    endpoint = f"{JAMF_API}/JSSResource/mobiledevices/id/{device_id}"
+    results = mdm_get_request_jamf_classic_json(endpoint)
+    device_name = results['mobile_device']['general']['display_name']
+
+    # Shut down device
+    command = 'ShutDownDevice'
+    endpoint = f"{JAMF_API}/JSSResource/mobiledevicecommands/command/{command}/id/{device_id}"
+    mdm_post_request_jamf_classic_xml(endpoint)
 ```
 
 #### Update Mobile Device Name
@@ -688,3 +765,7 @@ def mdm_remove_mobile_device_from_all_prestages(serial_number):
         endpoint = f"{JAMF_API}/api/v2/mobile-device-prestages/{item}/scope/delete-multiple"
         mdm_post_request_jamf_pro(endpoint, json)
 ```
+
+# Commands and Queries
+
+Taken from [Apple Developer Documentation | Commands and Queries](https://developer.apple.com/documentation/devicemanagement/commands_and_queries?language=objc)
